@@ -78,6 +78,8 @@ class Player extends Queue {
 
 				this.player.on(AudioPlayerStatus.Idle, async () => {					
 					await this.shift();
+					await this.player.removeAllListeners();
+					await this.connection.removeAllListeners();
 					resolve(true);
 				});
 			} catch (err) {
