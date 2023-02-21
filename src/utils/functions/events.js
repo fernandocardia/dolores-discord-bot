@@ -2,15 +2,14 @@ import { Collection } from 'discord.js';
 import CommandProcessor from '../classes/CommandProcessor.js';
 import { getFileList, getModuleCollection } from './handlers.js';
 
-export function onMessage(bot, msg) {
-	console.log(msg);
+export function onMessage(bot, msg) {	
 	if (msg.author.bot || !msg.content.startsWith(config.prefix)) return;
 	const command = new CommandProcessor(msg);
 	if (bot.commands.has(command.cmd)) bot.commands.get(command.cmd).action(bot, msg, command);
 }
 
 export async function onBotReady(bot) {
-	console.log('Dolores on!');
+	console.log('Dolores ready!');
 
 	const commandModules = getFileList('commands');
 

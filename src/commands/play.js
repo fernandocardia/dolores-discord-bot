@@ -15,12 +15,9 @@ export default {
 				const channel = msg.member.voice.channel;
 				const player = Player.getPlayer(msg.guild, bot);
 				const playing = player.playing();
-				const connected = await player.join(channel);	
-				
-				console.log(command);
-				console.log(command.combined);
+				const connected = await player.join(channel);
 
-				const video = item.includes('&list') ? await player.addPlaylist(item) : await player.add(item);
+				const video = item.includes('list=') ? await player.addPlaylist(item) : await player.add(item);
 
 				if (!connected || playing) {										
 					if (video) msg.channel.send(__.addedtoqueue());
