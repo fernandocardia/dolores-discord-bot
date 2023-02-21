@@ -81,11 +81,7 @@ class Player extends Queue {
 							resolve(true);
 						});
 
-					});
-				// this.bitstream = await ytdl(item, { 
-				// 	filter: 'audioonly', 
-				// 	highWaterMark: 1<<22 
-				// });				
+					});			
 			} catch (err) {
 				console.error(err);
 				await this.skip();

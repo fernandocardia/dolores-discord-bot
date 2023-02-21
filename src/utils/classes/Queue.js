@@ -23,9 +23,10 @@ export default class Queue {
 	addPlaylist = async string => {
 		try{
 			const items = await getPlaylist(string);
-			console.log(items);
 			const added = items.map(item => this.add(item, false));
+
 			await Promise.allSettled(added);
+
 			const video = await getVideoDetails(items[0]);
 			if (video.videoDetails)	return video;
 			else return true;		
@@ -63,7 +64,7 @@ export default class Queue {
 		const validatedPageSize = parseInt(pageSize);
 
 		if (Number.isNaN(validatedPage) || Number.isNaN(validatedPageSize)) {
-			reject(`Page or page invalid.`);
+			reject(`Página inválida.`);
 			return;
 		}
 
@@ -106,28 +107,5 @@ export default class Queue {
 		const result = await redisLpop(this.queueIdentifier);
 
 		return result;
-	};
-
-	remove = async (index, value) => {
-		const result = await redisLrem(this.queueIdentifier, index, value);
-
-		return result;
-	};
-
-	move = async (initialIndex, newIndex) => {
-		const initialIndexAdjusted = parseInt(initialIndex) - 1;
-		const newIndexAdjusted = parseInt(newIndex) - 1;
-
-		if (Number.isNaN(initialIndexAdjusted) || Number.isNaN(newIndexAdjusted))
-			reject('Invalid index');
-
-		const songToInsertBefore = await redisLindex(this.queueIdentifier, newIndexAdjusted);
-		const itemToMove = await redisLindex(this.queueIdentifier, initialIndexAdjusted);
-		const removeResult = await this.remove(initialIndexAdjusted, itemToMove);
-
-		if (removeResult) 
-			await redisLinsert(this.queueIdentifier, 'BEFORE', songToInsertBefore, itemToMove);
-
-		return true;
 	};
 }

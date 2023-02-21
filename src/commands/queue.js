@@ -19,8 +19,7 @@ export default {
 					return;
 				}
 					
-				const videos = result.queue.map(async url => {
-					console.log(url);
+				const videos = result.queue.map(async url => {					
 					const details = await getVideoDetails(url);
 	
 					if (details) return details.videoDetails;
