@@ -1,7 +1,7 @@
 import redisModule from 'redis';
 import { promisify } from 'util';
 import ytdl from 'ytdl-core-discord';
-import { findFirstUrl, getVideoDetails } from './../functions/handlers.js';
+import { findFirstUrl, getVideoDetails, getPlaylist } from './../functions/handlers.js';
 
 const redis = redisModule.createClient(config.redis_port, config.redis_host);
 
@@ -20,7 +20,22 @@ export default class Queue {
 		this.queueIdentifier = `dolores:${this.guild.id}:queue`;
 	}
 
-	add = async string => {				
+	addPlaylist = async string => {
+		try{
+			const items = await getPlaylist(string);
+			console.log(items);
+			const added = items.map(item => this.add(item, false));
+			await Promise.allSettled(added);
+			const video = await getVideoDetails(items[0]);
+			if (video.videoDetails)	return video;
+			else return true;		
+		}
+		catch(err){
+			console.error(error);
+		}
+	}
+
+	add = async (string, getDetails=true) => {				
 		let url = '';
 		try {
 			url = ytdl.validateURL(string) ? string : await findFirstUrl(string, 1);
@@ -32,7 +47,7 @@ export default class Queue {
 			const data = await redisRpush(this.queueIdentifier, url);
 	
 			if (data) {
-	
+				if (!getDetails) return true;
 				const video = await getVideoDetails(Array.isArray(url) ? url[0] : url);
 
 				if (video.videoDetails)	return video;

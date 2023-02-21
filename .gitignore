@@ -2,3 +2,5 @@
 /dump.rdb
 .env
 .package-lock.json
+*.sh
+*.mp4

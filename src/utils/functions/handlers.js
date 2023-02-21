@@ -87,3 +87,42 @@ export async function findFirstUrl(search, resultCount = config.paginate_max_res
 		}
 	});
 }
+
+export function getPlaylist(url, maxResults = config.playlist_max_items) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			const yt = youtube({
+				version: 'v3',
+				auth: process.env.GOOGLE_API_TOKEN
+			});
+
+			const parsedUrl = new URL(url);
+			const { list } = Object.fromEntries(parsedUrl.searchParams);
+
+			if (!(parsedUrl.hostname === 'youtube.com' || parsedUrl.hostname === 'www.youtube.com') || !list) {
+				console.log(parsedUrl.hostname, list);
+				reject('url inválida.');
+				return;
+			}
+
+			const params = {
+				part: 'snippet',
+				maxResults,
+				playlistId: list
+			};
+
+			await yt.playlistItems.list(params, (err, data) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+
+				const videos = data.data.items.map(({ snippet }) => `https://www.youtube.com/watch?v=${snippet.resourceId.videoId}`);
+
+				resolve(videos);
+			});
+		} catch (error) {
+			reject(error);
+		}
+	});
+}

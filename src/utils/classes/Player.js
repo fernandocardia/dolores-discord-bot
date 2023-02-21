@@ -2,8 +2,10 @@ import Discord from 'discord.js';
 import { AudioPlayerStatus, createAudioPlayer, createAudioResource, joinVoiceChannel, StreamType } from '@discordjs/voice';
 import redisModule from 'redis';
 import { promisify } from 'util';
-import ytdl from 'ytdl-core-discord';
+//import ytdl from 'ytdl-core-discord';
+import ytdl from 'ytdl-core';
 import Queue from './Queue.js';
+import * as fs from 'fs';
 
 const redis = redisModule.createClient(config.redis_port, config.redis_host);
 
@@ -57,33 +59,35 @@ class Player extends Queue {
 
 				if (!this.connection) throw TypeError('Sem conexão');
 
-				this.bitstream = await ytdl(item, { 
-					filter: 'audioonly', 
-					highWaterMark: 1<<22 
-				});
-				this.resource = await createAudioResource(this.bitstream, {			
-					inputType: StreamType.Opus,
-					volume: 0.7
-				});
-				await this.connection.subscribe(this.player);
-				await this.player.play(this.resource);		
+				await ytdl(item, {filter: 'audioonly'})
+					.pipe(fs.createWriteStream(`current-${this.guild.id}.mp4`))
+					.on('close', async () => {
+						this.resource = await createAudioResource(`current-${this.guild.id}.mp4`);
+						await this.connection.subscribe(this.player);
+						await this.player.play(this.resource);		
+		
+						this.player.on('error', (err) => console.error(err));
+						this.connection.on('skip', async () => {					
+							await this.player.stop();				
+							await this.shift();
+							resolve(true);
+							return;					
+						});
+		
+						this.player.on(AudioPlayerStatus.Idle, async () => {					
+							await this.shift();
+							await this.player.removeAllListeners();
+							await this.connection.removeAllListeners();
+							resolve(true);
+						});
 
-				this.player.on('error', (err) => console.error(err));
-				this.connection.on('skip', async () => {					
-					await this.player.stop();				
-					await this.shift();
-					resolve(true);
-					return;					
-				});
-
-				this.player.on(AudioPlayerStatus.Idle, async () => {					
-					await this.shift();
-					await this.player.removeAllListeners();
-					await this.connection.removeAllListeners();
-					resolve(true);
-				});
+					});
+				// this.bitstream = await ytdl(item, { 
+				// 	filter: 'audioonly', 
+				// 	highWaterMark: 1<<22 
+				// });				
 			} catch (err) {
-				console.err(error);
+				console.error(err);
 				await this.skip();
 				return true;
 			}
