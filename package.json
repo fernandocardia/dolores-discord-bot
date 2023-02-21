@@ -1,6 +1,6 @@
 {
 	"name": "dolores-discord-bot",
-	"version": "0.1.0",
+	"version": "0.1.3",
 	"description": "Bot de música simplificado.",
 	"main": "src/app.js",
 	"type": "module",

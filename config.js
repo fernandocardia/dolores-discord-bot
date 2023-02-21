@@ -6,5 +6,6 @@ export default {
 	redis_host: 'localhost',
 	redis_port: 6379,
 	redis_flush_on_start: false,
-	paginate_max_results: 10,			
+	paginate_max_results: 10,
+	playlist_max_items: 50		
 };

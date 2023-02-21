@@ -3,6 +3,7 @@ import CommandProcessor from '../classes/CommandProcessor.js';
 import { getFileList, getModuleCollection } from './handlers.js';
 
 export function onMessage(bot, msg) {
+	console.log(msg);
 	if (msg.author.bot || !msg.content.startsWith(config.prefix)) return;
 	const command = new CommandProcessor(msg);
 	if (bot.commands.has(command.cmd)) bot.commands.get(command.cmd).action(bot, msg, command);
