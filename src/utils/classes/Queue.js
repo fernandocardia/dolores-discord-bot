@@ -97,12 +97,6 @@ export default class Queue {
 		return result;
 	};
 
-	pop = async () => {
-		const result = await redisRpop(this.queueIdentifier);
-
-		return result;
-	};
-
 	shift = async () => {
 		const result = await redisLpop(this.queueIdentifier);
 
